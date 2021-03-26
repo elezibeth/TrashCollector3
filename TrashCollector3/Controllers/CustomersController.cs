@@ -63,6 +63,23 @@ namespace TrashCollector3.Controllers
 
             return View(customer);
         }
+        public async Task<IActionResult> Bill(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var customer = await _context.Customer
+                .Include(c => c.IdentityUser)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return View(customer);
+        }
 
         // GET: Customers/Create
         public IActionResult Create()
@@ -143,6 +160,50 @@ namespace TrashCollector3.Controllers
             return View(customer);
         }
 
+        public IActionResult ChangePickupDate(int id)
+        {
+
+
+
+            var customer = _context.Customer.Where(x => x.Id == id).FirstOrDefault();
+            return View(customer);
+        }
+
+        // POST: Customers/changepickupdadt
+       
+       
+        [HttpPost]
+        public  IActionResult ChangePickupDate(Customer customer)
+        {
+     
+                    _context.Update(customer);
+                    _context.SaveChanges();
+            var id = customer.Id;
+
+            return View("Details", customer);
+        }
+        public IActionResult RequestAddlPickup(int id)
+        {
+
+
+
+            var customer = _context.Customer.Where(x => x.Id == id).FirstOrDefault();
+            return View(customer);
+        }
+
+        // POST: Customers/changepickupdadt
+
+
+        [HttpPost]
+        public IActionResult RequestAddlPickup(Customer customer)
+        {
+
+            _context.Update(customer);
+            _context.SaveChanges();
+            var id = customer.Id;
+
+            return View("Details", customer);
+        }
         // GET: Customers/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {

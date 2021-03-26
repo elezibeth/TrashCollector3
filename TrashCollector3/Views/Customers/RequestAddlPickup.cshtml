@@ -1,0 +1,50 @@
+﻿@model TrashCollector3.Models.Customer
+
+@{
+    ViewData["Title"] = "RequestAddlPickup";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Request an additional pickup. </h1>
+
+<h4>Requests must be made at least 24 hours before the time you wish to recieve the pickup. </h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="RequestAddlPickup">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="FirstName" />
+            <input type="hidden" asp-for="LastName" />
+            <input type="hidden" asp-for="IdentityUserId" />
+            <input type="hidden" asp-for="AmountOwed" />
+            <input type="hidden" asp-for="Number" />
+            <input type="hidden" asp-for="StreetName" />
+            <input type="hidden" asp-for="City" />
+            <input type="hidden" asp-for="State" />
+            <input type="hidden" asp-for="ZipCode" />
+            <input type="hidden" asp-for="StartDate" />
+            <input type="hidden" asp-for="EndDate" />
+            <div class="form-group">
+                <label asp-for="Date" class="control-label"></label>
+                <input asp-for="Date" class="form-control" />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+            <input type="hidden" asp-for="Time" />
+            <input type="hidden" asp-for="Day" />
+          
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Details" asp-route-id="@Model.Id">Return to Details</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

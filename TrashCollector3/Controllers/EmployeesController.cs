@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,6 +25,17 @@ namespace TrashCollector3.Controllers
         {
             var applicationDbContext = _context.Employee.Include(e => e.IdentityUser);
             return View(await applicationDbContext.ToListAsync());
+
+            var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);//success, matches user id on aspnetusers data table
+            var employee = _context.Employee.Where(u => u.IdentityUserId == userId).FirstOrDefault();
+            if (employee == null)
+            {
+                return View("Create");
+            }
+            else
+            {
+                return View("Details", employee);
+            }
         }
 
         // GET: Employees/Details/5
@@ -44,6 +56,25 @@ namespace TrashCollector3.Controllers
 
             return View(employee);
         }
+        // GET: Employees/Details/5
+        public async Task<IActionResult> PickupList(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var employee = await _context.Employee
+                .Include(e => e.IdentityUser)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            var employeeZip = employee.Zip;
+
+            return View(employee);
+        }
 
         // GET: Employees/Create
         public IActionResult Create()
@@ -59,6 +90,8 @@ namespace TrashCollector3.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,IdentityUserId,Zip")] Employee employee)
         {
+            var userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            employee.IdentityUserId = userId;
             if (ModelState.IsValid)
             {
                 _context.Add(employee);
@@ -92,6 +125,53 @@ namespace TrashCollector3.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,IdentityUserId,Zip")] Employee employee)
+        {
+            if (id != employee.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(employee);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!EmployeeExists(employee.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["IdentityUserId"] = new SelectList(_context.Users, "Id", "Id", employee.IdentityUserId);
+            return View(employee);
+        }
+        public async Task<IActionResult> ChangePickupDay(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var employee = await _context.Employee.FindAsync(id);
+            if (employee == null)
+            {
+                return NotFound();
+            }
+            ViewData["IdentityUserId"] = new SelectList(_context.Users, "Id", "Id", employee.IdentityUserId);
+            return View(employee);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePickupDay(int id, [Bind("Id,FirstName,LastName,IdentityUserId,Zip")] Employee employee)
         {
             if (id != employee.Id)
             {
